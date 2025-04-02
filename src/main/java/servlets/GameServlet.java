@@ -7,11 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @WebServlet("/game")
 public class GameServlet extends HttpServlet {
+    private static final Logger logger = LoggerFactory.getLogger(GameServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -25,6 +28,7 @@ public class GameServlet extends HttpServlet {
             req.getRequestDispatcher("/index.jsp").forward(req, resp);
             return;
         }
+        logger.info("Starting the game for user: {}", playerName);
 
         Quest quest = (Quest) session.getAttribute("quest");
         if (quest == null) {
@@ -62,16 +66,19 @@ public class GameServlet extends HttpServlet {
 
         if ("exit".equals(action)) {
             String playerName = (String) session.getAttribute("playerName");
+            logger.info("Exit the game for user: {}", playerName);
             Integer gamesPlayed = (Integer) session.getAttribute("gamesPlayed");
             session.invalidate();
             resp.sendRedirect("index.jsp");
             return;
         }
 
+
         if (session.getAttribute("playerName") == null) {
             String playerName = req.getParameter("playerName");
             if (playerName != null && !playerName.isEmpty()) {
                 session.setAttribute("playerName", playerName);
+                logger.debug("A new session has been created for the user: {}", playerName);
 
                 resp.sendRedirect(req.getRequestURI());
                 return;
@@ -79,6 +86,7 @@ public class GameServlet extends HttpServlet {
         }
 
         String userChoice = req.getParameter("choice");
+        logger.info("User choice received: {}", userChoice);
 
         if (userChoice != null) {
             Quest quest = (Quest) session.getAttribute("quest");

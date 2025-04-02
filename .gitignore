@@ -1,6 +1,7 @@
 .WEB-INF/
 target/
-
+WEB-INF/
+out/artifacts/EscapeFromTheGhostTown_war_exploded/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
