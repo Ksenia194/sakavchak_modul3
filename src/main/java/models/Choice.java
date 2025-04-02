@@ -1,14 +1,14 @@
 package models;
 
 public class Choice {
-    public String text;
-    public int nextStepId;
+    private String text;
+    private String nextStepId;
 
     public void setText(String text) {
         this.text = text;
     }
 
-    public void setNextStepId(int nextStepId) {
+    public void setNextStepId(String nextStepId) {
         this.nextStepId = nextStepId;
     }
 
@@ -16,7 +16,7 @@ public class Choice {
         return text;
     }
 
-    public int getNextStepId() {
+    public String getNextStepId() {
         return nextStepId;
     }
 }

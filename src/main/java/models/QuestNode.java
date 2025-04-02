@@ -1,26 +1,38 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class QuestNode {
-    private int id;
-    private String text;
+    private int step;
+    private String title;
+    private String description;
     private List<Choice> choices;
 
-    public int getId() {
-        return id;
+    public int getStep() {
+        return step;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setStep(int step) {
+        this.step = step;
     }
 
-    public String getText() {
-        return text;
+    public String getTitle() {
+        return title;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Choice> getChoices() {

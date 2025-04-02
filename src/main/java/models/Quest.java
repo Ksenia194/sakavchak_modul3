@@ -1,7 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -10,84 +10,63 @@ import java.util.List;
 public class Quest {
     private List<QuestNode> questNodes = new ArrayList<>();
     private int currentStepId;
-    private HttpSession session;
+    private List<Finale> finales = new ArrayList<>();
 
     public void initializeGame() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
+        InputStream questStream = getClass().getClassLoader().getResourceAsStream("quest.json");
+        InputStream finalesStream = getClass().getClassLoader().getResourceAsStream("finale.json");
 
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("quest.json");
-
-        if (inputStream == null) {
-            throw new RuntimeException("Quest data file is missing or empty");
-        }
-
-        questNodes = mapper.readValue(inputStream,
+        questNodes = mapper.readValue(questStream,
                 mapper.getTypeFactory().constructCollectionType(List.class, QuestNode.class));
+        finales = mapper.readValue(finalesStream,
+                mapper.getTypeFactory().constructCollectionType(List.class, Finale.class));
 
-        if (questNodes == null || questNodes.isEmpty()) {
-            throw new RuntimeException("Quest data file is empty or failed to load.");
-        }
-
-        currentStepId = questNodes.get(0).getId();
+        currentStepId = 1;
     }
 
     public QuestNode getCurrentStep() {
-        if (questNodes == null || questNodes.isEmpty()) {
-            throw new RuntimeException("Quest is not initialize");
-        }
-
-        for (QuestNode node : questNodes) {
-            if (node.getId() == currentStepId) {
-                return node;
-            }
-        }
-        throw new RuntimeException("Invalid step id: " + currentStepId);
+        return questNodes.stream()
+                .filter(node -> node.getStep() == currentStepId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Invalid step id: " + currentStepId));
     }
 
-    public void processUserChoice(String userChoice) {
+    public void processUserChoice(String userChoice){
         QuestNode currentStep = getCurrentStep();
-        List<Choice> choices = currentStep.getChoices();
 
-        if (choices == null || choices.isEmpty()) {
-            throw new RuntimeException("No available choices for this step");
-        }
-
-        for (Choice choice : choices) {
-            if (choice.getText().equals(userChoice)) {
-                currentStepId = choice.getNextStepId();
+        for (Choice choice : currentStep.getChoices()) {
+            if (choice.getText().trim().equalsIgnoreCase(userChoice.trim())) {
+                String nextStepId = choice.getNextStepId();
+                if (nextStepId.startsWith("FINALE_")) {
+                    currentStepId = -Integer.parseInt(nextStepId.replace("FINALE_", ""));
+                    return;
+                }
+                currentStepId = Integer.parseInt(nextStepId);
                 return;
             }
         }
 
-        throw new RuntimeException("Invalid user choice: " + userChoice);
+        throw new RuntimeException("Incorrect user selection: " + userChoice);
     }
 
-    public void savePlayerData(String playerName, int gamesPlayed) {
-        if (session == null) {
-            throw new RuntimeException("Session is not initialized");
-        }
 
-        session.setAttribute("playerName", playerName);
-        session.setAttribute("currentStepId", currentStepId);
-        session.setAttribute("gamesPlayed", gamesPlayed);
+    public Finale getFinaleById(String finaleId) {
+        return finales.stream()
+                .filter(finale -> finale.getId().equals(finaleId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Invalid finale id: " + finaleId));
     }
 
     public void resetGame() {
         currentStepId = 1;
     }
 
-    public void setSession(HttpSession session) {
-        this.session = session;
-    }
-
-    public List<QuestNode> getQuestNodes() {
-        if (questNodes == null || questNodes.isEmpty()) {
-            throw new RuntimeException("Quest data is not initialize");
-        }
-        return questNodes;
-    }
-
     public int getCurrentStepId() {
         return currentStepId;
+    }
+
+    public void setCurrentStepId(int currentStepId) {
+        this.currentStepId = currentStepId;
     }
 }
