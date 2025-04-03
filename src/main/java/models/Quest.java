@@ -49,8 +49,6 @@ public class Quest {
                 }
                 currentStepId = Integer.parseInt(nextStepId);
                 return;
-            } else {
-                logger.error("Unknown user selection: {}", userChoice);
             }
         }
 
